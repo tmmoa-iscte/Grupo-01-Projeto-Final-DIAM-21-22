@@ -13,3 +13,36 @@ from django.contrib.auth import authenticate, login, logout
 
 def index(request):
     return HttpResponse("Esta será a página do fórum Espaço ISCTE! :)")
+
+
+def register(request):
+    return HttpResponse("Esta será a página do fórum Espaço ISCTE! :)")
+
+
+def login_user(request):
+    return HttpResponse("Esta será a página do fórum Espaço ISCTE! :)")
+
+
+def profile(request):
+    return HttpResponse("Esta será a página do fórum Espaço ISCTE! :)")
+
+
+def profile_edit(request):
+    return HttpResponse("Esta será a página do fórum Espaço ISCTE! :)")
+
+
+def section(request, section_simplified_title):
+    return HttpResponse("Esta será a página do fórum Espaço ISCTE! :)")
+
+
+def thread(request, section_simplified_title, thread_simplified_title):
+    return HttpResponse("Esta será a página do fórum Espaço ISCTE! :)")
+
+
+def new_thread(request, section_simplified_title):
+    return HttpResponse("Esta será a página do fórum Espaço ISCTE! :)")
+
+
+def new_comment(request, section_simplified_title, thread_simplified_title):
+    return HttpResponse("Esta será a página do fórum Espaço ISCTE! :)")
+
