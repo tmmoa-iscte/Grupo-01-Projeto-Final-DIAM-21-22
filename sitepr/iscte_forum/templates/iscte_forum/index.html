@@ -2,9 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>{% block page-title %}Espaço Iscte{% endblock %}</title>
 </head>
 <body>
+    <section class="navbar"> <!-- Irá ser aquela barrinha no topo, por enquanto vou meter só um título -->
+        <h1 style="color:blue">Espaço Iscte</h1>
+        <h2 style="color:blue"> Um espaço para postar</h2>
+        {% if request.user.is_authenticated %}
+            <p>Logged in as: {{ request.user.username }}</p>
+            <a href="{% url 'iscte_forum:profile' %}">Profile</a>
+            <a href="{% url 'iscte_forum:logout_page' %}">Logout</a>
+        {% else %}
+            <a href="{% url 'iscte_forum:login_page' %}">Login</a>
+            <a href="{% url 'iscte_forum:register' %}">Register</a>
+        {% endif %}
+    </section>
+    {% block content %}
+    <section class="forum">
+        {% for category in all_categories %}
+            <h3>{{ category.title }}</h3>
+            {% for section in category.section_set.all %}
+                <a href="{% url 'iscte_forum:section' section.simplified_title %}"><strong>{{ section.title }}</strong></a>
+                <p>{{ section.description }}</p>
+                <br/>
+            {% endfor %}
+        {% endfor %}
+        <br/><br/>
+    </section>
+    <section> <!-- Criar novas Categories/Threads -->
+        <form class="new-category" action="{% url 'iscte_forum:index' %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="new-category-title" id="new-category-title" placeholder="New Category Title" />
+            <input type="submit" value="Create New Category" />
+        </form>
 
+        <form class="new-section" action="{% url 'iscte_forum:index' %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="new-sec-title" id="new-sec-title" placeholder="New Section Title" required />
+            <input type="text" name="new-sec-desc" id="new-sec-desc" placeholder="New Section Description" required />
+            <select id="new-sec-category-title" name="new-sec-category-title" required>
+                {% for category in all_categories %}
+                    <option value="{{ category.title }}">{{ category.title }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Create New Section" />
+        </form>
+    </section>
+    {% endblock %}
 </body>
 </html>

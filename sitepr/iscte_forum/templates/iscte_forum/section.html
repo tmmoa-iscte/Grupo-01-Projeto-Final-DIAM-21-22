@@ -1,10 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "iscte_forum/index.html" %}
 
-</body>
-</html>
+{% block page-title %}Espaço Iscte - {{ sec.title }}{% endblock %}
+
+{% block content %}
+<section>
+    <h1>{{ sec.title }}</h1>
+    {% for thread in threads_by_section %}
+        <a href="{% url 'iscte_forum:thread' sec.simplified_title thread.simplified_title %}">{{ thread.title }}</a>
+        <br/><br/>
+    {% endfor %}
+    <br/><br/>
+</section>
+<section>
+    {% if request.user.is_authenticated %}
+    <a href="{% url 'iscte_forum:new_thread' sec.simplified_title %}">Criar Thread</a>
+    {% endif %}
+</section>
+{% endblock %}

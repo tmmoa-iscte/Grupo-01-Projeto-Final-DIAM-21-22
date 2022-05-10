@@ -5,6 +5,65 @@
     <title>Title</title>
 </head>
 <body>
+    <form action="{% url 'iscte_forum:register' %}" method="post">
+        {% csrf_token %}
+        <table align="center" cellpadding = "10">
 
+        <tr>
+            <td>Foto de Perfil:</td>
+            <td>
+                <input type="file" id="user-profile-pic" name="user-profile-pic" accept="image/*">
+            </td>
+        </tr>
+
+        <tr>
+            <td>Username:</td>
+            <td>
+                <input type="text" name="user-username" id="user-username" placeholder="Username" required />
+            </td>
+        </tr>
+
+        <tr>
+            <td>Email:</td>
+            <td>
+                <input type="email" name="user-email" id="user-email" placeholder="Email" required />
+            </td>
+        </tr>
+
+            <tr>
+            <td>Password:</td>
+            <td>
+                <input type="password" name="user-password" id="user-password" placeholder="Password" required />
+            </td>
+        </tr>
+
+        <tr>
+			<td>Curso:</td>
+			<td>
+				<select id="user-course" name="user-course"> <!--TODO: guardar cursos na base de dados-->
+						<option value="Engenharia Informática">Engenharia Informática</option>
+						<option value="Engenharia de Telecomunicações e Informática">Engenharia de Telecomunicações e Informática</option>
+						<option value="Informática e Gestão de Empresas">Informática e Gestão de Empresas</option>
+				</select>
+			</td>
+        </tr>
+
+		<tr>
+			<td>Sobre mim:</td>
+			<td>
+				<input type="text" name="user-about-me" id="user-about-me" placeholder="Fala-me sobre ti!" />
+			</td>
+		</tr>
+
+		<tr>
+			<td>Cadeiras favoritas:</td>
+			<td>
+				<input type="text" name="user-favourite-classes" id="user-favourite-classes" placeholder="Indique as suas cadeiras favoritas!" />
+			</td>
+		</tr>
+
+		<tr><td><input type="submit" value="Register" /></td></tr>
+
+    </form>
 </body>
 </html>

@@ -28,10 +28,10 @@ class Thread(models.Model):
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    course = models.CharField(max_length=100)
+    course = models.CharField(max_length=100, null=True)
     profile_picture = models.CharField(max_length=256, default="iscte_forum/static/images/pfp_default.png")
     about_me = models.TextField(default="Gosto muito do Iscte!")
-    favourite_classes = models.CharField(max_length=512, default="")
+    favourite_classes = models.CharField(max_length=512, default="", null=True)
 
 
 class Comment(models.Model):
@@ -40,6 +40,7 @@ class Comment(models.Model):
     dislike_count = models.IntegerField(default=0)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE)
+    time = models.DateTimeField(null=True)
 
 
 class Rating(models.Model):

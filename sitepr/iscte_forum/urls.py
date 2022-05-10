@@ -1,6 +1,9 @@
 from django.urls import include, path
 from . import views
 # (. significa que importa views da mesma directoria)
+
+app_name = 'iscte_forum'
+
 urlpatterns = [
     path('', views.index, name='index'),
     # ex: /register
@@ -18,9 +21,7 @@ urlpatterns = [
     # ex: /engenharia-informatica/duvida-no-exercicio
     path('<str:section_simplified_title>/<str:thread_simplified_title>', views.thread, name='thread'),
     # ex: /engenharia-informatica/post
-    path('<str:section_simplified_title>/post', views.new_thread, name='new_thread'),
-    # ex: /engenharia-informatica/duvida-no-exercicio/comment
-    path('<str:section_simplified_title>/<str:thread_simplified_title>/comment', views.new_comment, name='new_comment'),
+    path('<str:section_simplified_title>/action/post', views.new_thread, name='new_thread'),
 
     # ex: /engenharia-informatica/duvida-no-exercicio/7/1 (1 = positivo; anything else = negativo.)
     path('<str:section_simplified_title>/<str:thread_simplified_title>/<int:comment_id>/<int:positive_num>',

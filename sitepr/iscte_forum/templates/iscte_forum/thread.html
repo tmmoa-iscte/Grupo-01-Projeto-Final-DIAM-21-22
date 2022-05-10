@@ -1,10 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "iscte_forum/index.html" %}
 
-</body>
-</html>
+{% block page-title %}{{ thread.title }}{% endblock %}
+
+{% block content %}
+    <section>
+        <h1>{{ thread.title }}</h1>
+        {% for comment in comments_by_thread %}
+            <p><strong>{{ comment.author.username }}</strong>: {{ comment.text }}</p>
+        {% endfor %}
+        <br/>
+    </section>
+    <section>
+        {% if request.user.is_authenticated %}
+        <form action="{% url 'iscte_forum:thread' section.simplified_title thread.simplified_title %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="new-comment-text" id="new-comment-text" placeholder="Texto do novo comentário..." />
+            <br/><br/>
+            <input type="submit" value="Comentar" />
+        </form>
+        {% endif %}
+    </section>
+{% endblock %}

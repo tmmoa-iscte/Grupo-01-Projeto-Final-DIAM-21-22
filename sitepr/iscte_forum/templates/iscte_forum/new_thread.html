@@ -1,10 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "iscte_forum/index.html" %}
 
-</body>
-</html>
+{% block page-title %}Nova Thread - {{ sec.title }}{% endblock %}
+
+{% block content %}
+<section>
+    <form action="{% url 'iscte_forum:new_thread' sec.simplified_title %}" method="post">
+        {% csrf_token %}
+        <input type="text" name="new-thread-title" id="new-thread-title" placeholder="Título" required />
+        <br/>
+        <input type="text" name="new-thread-comment" id="new-thread-comment" placeholder="Em que estás a pensar?" required />
+        <br/><br/>
+        <input type="submit" value="Criar Thread" />
+    </form>
+</section>
+{% endblock %}
