@@ -4,16 +4,66 @@
 
 {% block content %}
 <section>
-    <h1>{{ sec.title }}</h1>
-    {% for thread in threads_by_section %}
-        <a href="{% url 'iscte_forum:thread' sec.simplified_title thread.simplified_title %}">{{ thread.title }}</a>
-        <br/><br/>
-    {% endfor %}
+    <section class="section-header">
+        <h1 class="align-left" style="margin: 0;">{{ sec.title }}</h1>
+        <section class="align-right section--header--inner">
+            <p>  </p>
+            <form action="{% url 'iscte_forum:section' sec.simplified_title %}" method="post">
+                {% csrf_token %}
+                <select id="sort-thread-mode" name="sort-thread-mode" required>
+                    <option value="none" selected disabled hidden>Selecione o modo de organização de threads</option>
+                    <option value="thread-sorting-timestamp">Organizar threads por tempo de criação</option>
+                    <option value="thread-sorting-stars">Organizar threads pelo número de estrelas</option>
+                </select>
+                <input type="submit" value="Organizar Threads" />
+            </form>
+            {% if request.user.is_authenticated %}
+                <p>  </p>
+                <a class="link-button" href="{% url 'iscte_forum:new_thread' sec.simplified_title %}">Criar Thread</a>
+            {% endif %}
+        </section>
+    </section>
+    <section class="align-left section--tools">
+        {% if request.user.is_superuser %}
+            <section class="section--tools">
+                <form action="{% url 'iscte_forum:section' sec.simplified_title %}" method="post">
+                {% csrf_token %}
+                <input type="text" id="section-edit-title" name="section-edit-title" value="{{ sec.title }}"/>
+                <input type="submit" value="Atualizar Título da Secção" />
+                </form>
+                <p>  </p>
+                <a id="delete-section-button" class="link-button" href="{% url 'iscte_forum:delete_section' sec.simplified_title %}">Apagar Secção</a>
+            </section>
+        {% else %}
+            <p></p>
+        {% endif %}
+        <section class="section--tools" style="padding-right: 30px;">
+            <form action="{% url 'iscte_forum:section' sec.simplified_title %}" method="post">
+                {% csrf_token %}
+                <input type="text" id="section-thread-filter" name="section-thread-filter" placeholder="Palavras-chave..."/>
+                <input type="submit" value="Filtrar lista de Threads" />
+            </form>
+        </section>
+    </section>
+    <section id="category-container" class="category">
+        {% for thread in threads_by_section %}
+            <section class="thread-container">
+                <section class="{% if forloop.counter|divisibleby:2 %} section-blue {% else %} section-white {% endif %}" style="{% if forloop.first %} padding-top: 20px; border-top: 0px solid white; {% endif %}">
+                    <section style="display: flex;">
+                        <a class="bigger-text" href="{% url 'iscte_forum:thread' sec.simplified_title thread.simplified_title %}"><strong>{{ thread.title }}</strong></a>
+                        <a class="thread--title--star" href="{% url 'iscte_forum:star_thread' sec.simplified_title thread.simplified_title  %}">
+                            {% if thread.id in user_stars %}⭐{% else %}☆{% endif %}
+                        </a>
+                    </section>
+                    <p><strong>{{ thread.author.username }}</strong>, {{ thread.time }}</p>
+                </section>
+                <section class="thread--inner" style="{% if forloop.first %} border-top: 0px solid white; {% endif %}">
+                    <p class="thread--inner--star"><strong>{{ thread.star_count }}</strong> ⭐</p>
+                    <p class="bigger-text thread--inner--text"><strong>{{ thread.comment_set.count }}</strong> post{{ thread.comment_set.count|pluralize:"s" }}</p>
+                </section>
+            </section>
+        {% endfor %}
+    </section>
     <br/><br/>
-</section>
-<section>
-    {% if request.user.is_authenticated %}
-    <a href="{% url 'iscte_forum:new_thread' sec.simplified_title %}">Criar Thread</a>
-    {% endif %}
 </section>
 {% endblock %}

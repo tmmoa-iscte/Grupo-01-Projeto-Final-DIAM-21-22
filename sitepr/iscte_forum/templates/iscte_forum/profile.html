@@ -1,10 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "iscte_forum/index.html" %}
 
-</body>
-</html>
+{% block page-title %}Perfil - {{ usr.username }}{% endblock %}
+
+{% block content %}
+    <section class="outline">
+        {% if request.user.is_authenticated %}
+            {% if usr.is_superuser %}
+                <h2>Administrador</h2>
+            {% endif %}
+            <figure>
+                <img class="profile-picture" id="profile-pic-profile" src="{{ usr.student.profile_picture }}">
+            </figure>
+            <section>
+                <p><strong>Informação Geral</strong></p>
+                <p>{{ usr.username }}</p>
+                <p>{{ usr.email }}</p>
+                <br/>
+                {% if usr.student %}
+                    <p><strong>Curso & Cadeiras Favoritas</strong></p>
+                    {% if usr.student.course %}
+                        <p>Eu estudo no curso {{ usr.student.course.name }}.</p>
+                    {% else %}
+                        <p>Este utilizador não tem um Curso associado.</p>
+                    {% endif %}
+                    {% if usr.student.favourite_classes %}
+                        <p>As minhas cadeiras favoritas são: {{ usr.student.favourite_classes }}.</p>
+                    {% endif %}
+                    <br/>
+                    {% if usr.student.about_me %}
+                        <p><strong>Sobre mim:</strong></p>
+                        <p>{{ usr.student.about_me }}</p>
+                    {% endif %}
+                {% else %}
+                    <p>Este utilizador não tem informação de Estudante associada.</p>
+                {% endif %}
+                {% if request.user.id == usr.id %}
+                    <br/><br/>
+                    <a class="link-button" href="{% url 'iscte_forum:profile_edit' request.user.username %}">Editar Perfil</a>
+                    <br/><br/><br/>
+                {% endif %}
+            </section>
+        {% else %}
+            <p><strong>Apenas utilizadores autenticados podem ver perfis.</strong></p>
+            <a href="{% url 'iscte_forum:login_page' %}">Já tem conta? Clique aqui para dar login!</a>
+        {% endif %}
+    </section>
+{% endblock %}

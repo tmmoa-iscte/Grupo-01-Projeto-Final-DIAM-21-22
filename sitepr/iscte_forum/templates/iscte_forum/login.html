@@ -1,17 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    <form action="{% url 'iscte_forum:login_page' %}" method="post">
-        {% csrf_token %}
-        <input type="text" name="username" id="username" placeholder="Username" />
+{% extends "iscte_forum/index.html" %}
+
+{% block page-title %}Login{% endblock %}
+
+{% block content %}
+    <section class="outline">
+        {% if error_message %}
+            <br/>
+            <p class="error-message"><strong>{{ error_message }}</strong></p>
+        {% else %}
+            <br/>
+        {% endif %}
+        <form action="{% url 'iscte_forum:login_page' %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="username" id="username" placeholder="Username" />
+            <br/>
+            <input type="password" name="password" id="password" placeholder="Password" />
+            <br/><br/>
+            <input type="submit" value="Login" />
+        </form>
         <br/>
-        <input type="password" name="password" id="password" placeholder="Password" />
+        <a href="{% url 'iscte_forum:register' %}">Ainda não tem conta? Clique aqui para se registar!</a>
         <br/><br/>
-        <input type="submit" value="Login" />
-    </form>
-</body>
-</html>
+    </section>
+{% endblock %}

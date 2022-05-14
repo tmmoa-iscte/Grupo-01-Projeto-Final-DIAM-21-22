@@ -8,7 +8,7 @@
         {% csrf_token %}
         <input type="text" name="new-thread-title" id="new-thread-title" placeholder="Título" required />
         <br/>
-        <input type="text" name="new-thread-comment" id="new-thread-comment" placeholder="Em que estás a pensar?" required />
+        <textarea class="fancy-input text-area" type="text" name="new-thread-comment" id="new-thread-comment" placeholder="Em que estás a pensar?" required></textarea>
         <br/><br/>
         <input type="submit" value="Criar Thread" />
     </form>

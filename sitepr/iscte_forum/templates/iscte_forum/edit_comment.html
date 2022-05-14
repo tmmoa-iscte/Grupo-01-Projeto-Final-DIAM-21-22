@@ -1,0 +1,14 @@
+{% extends "iscte_forum/index.html" %}
+
+{% load static %}
+
+{% block page-title %}Editar Comentário{% endblock %}
+
+{% block content %}
+    <form action="{% url 'iscte_forum:edit_comment' section_simplified_title thread_simplified_title comment.id %}" method="post">
+        {% csrf_token %}
+        <textarea class="fancy-input text-area" name="edit-comment-text" id="new-comment-text" placeholder="O que quer comentar?">{{ comment.text }}</textarea>
+        <br/><br/>
+        <input type="submit" value="Atualizar Comentário" />
+    </form>
+{% endblock %}

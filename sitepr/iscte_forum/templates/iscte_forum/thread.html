@@ -1,12 +1,65 @@
 {% extends "iscte_forum/index.html" %}
 
+{% load static %}
+
 {% block page-title %}{{ thread.title }}{% endblock %}
 
 {% block content %}
     <section>
-        <h1>{{ thread.title }}</h1>
+        <section class="section-header">
+            <h1 class="align-left">{{ thread.title }}</h1>
+            <section class="align-right">
+            {% if request.user.is_superuser or request.user.id == thread.author.id %}
+                <a id="delete-thread-button" class="link-button" href="{% url 'iscte_forum:delete_thread' section.simplified_title thread.simplified_title %}">Apagar Thread</a>
+            {% endif %}
+        </section>
+        </section>
         {% for comment in comments_by_thread %}
-            <p><strong>{{ comment.author.username }}</strong>: {{ comment.text }}</p>
+            <section class="category">
+                <section class="comment">
+                    <section class="message-cell-user">
+                        <figure>
+                            {% if comment.author %}
+                                <a href="{% url 'iscte_forum:profile' comment.author.username %}"><img class="profile-picture" src="{{ comment.author.student.profile_picture }}"></a>
+                            {% else %}
+                                <img class="profile-picture" src="{% static 'iscte_forum/images/pfp_default.png' %}">
+                            {% endif %}
+                        </figure>
+                        <p><strong>{{ comment.author.username }}</strong></p>
+                        {% if comment.author.is_superuser %}
+                            <p style="color: #0D28C2">Administrador</p>
+                        {% else %}
+                            <p>Membro</p>
+                        {% endif %}
+                    </section>
+                    <section class="comment--inner">
+                        <header class="comment--inner--header"><p>{{ comment.time }} {% if comment.edited %}<i>(edited)</i>{% endif %}</p></header>
+                        <section class="comment--inner--text"><pre>{{ comment.text }}</pre></section>
+                        <footer class="comment--inner--footer">
+                            <section>
+                                {% if request.user.is_superuser or request.user.id == comment.author.id %}
+                                    <a class="delete-comment-button" href="{% url 'iscte_forum:delete_comment' section.simplified_title thread.simplified_title comment.id %}">🗑️</a>
+                                    <a href="{% url 'iscte_forum:edit_comment' section.simplified_title thread.simplified_title comment.id %}">📝️</a>
+                                {% else %}
+                                    <p></p>
+                                {% endif %}
+                            </section>
+                            <section class="comment--inner--footer--right">
+                                <section class="comment--inner--footer--right">
+                                    <a href="{% url 'iscte_forum:rate_comment' section.simplified_title thread.simplified_title comment.id 1 %}">👍</a>
+                                    <p>{{ comment.like_count }}</p>
+                                    <p>  </p>
+                                </section>
+                                <section class="comment--inner--footer--right">
+                                    <a href="{% url 'iscte_forum:rate_comment' section.simplified_title thread.simplified_title comment.id 0 %}">👎</a>
+                                    <p>{{ comment.dislike_count }}</p>
+                                </section>
+                            </section>
+                        </footer>
+                    </section>
+                </section>
+            </section>
+            <br/><br/>
         {% endfor %}
         <br/>
     </section>
@@ -14,9 +67,9 @@
         {% if request.user.is_authenticated %}
         <form action="{% url 'iscte_forum:thread' section.simplified_title thread.simplified_title %}" method="post">
             {% csrf_token %}
-            <input type="text" name="new-comment-text" id="new-comment-text" placeholder="Texto do novo comentário..." />
-            <br/><br/>
-            <input type="submit" value="Comentar" />
+            <textarea class="fancy-input text-area" name="new-comment-text" id="new-comment-text" placeholder="Texto do novo comentário..."></textarea>
+            <br>
+            <input type="submit" value="Postar Novo Comentário" />
         </form>
         {% endif %}
     </section>

@@ -24,11 +24,17 @@ class Thread(models.Model):
     simplified_title = models.CharField(max_length=150)  # Pode ter o mesmo título em sections diferentes.
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
     star_count = models.IntegerField(default=0)
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    time = models.DateTimeField(null=True)
+
+
+class Course(models.Model):
+    name = models.CharField(max_length=100)
 
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    course = models.CharField(max_length=100, null=True)
+    course = models.ForeignKey(Course, on_delete=models.RESTRICT, null=True)
     profile_picture = models.CharField(max_length=256, default="iscte_forum/static/images/pfp_default.png")
     about_me = models.TextField(default="Gosto muito do Iscte!")
     favourite_classes = models.CharField(max_length=512, default="", null=True)
@@ -41,6 +47,7 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE)
     time = models.DateTimeField(null=True)
+    edited = models.BooleanField(default=False)
 
 
 class Rating(models.Model):
@@ -52,4 +59,3 @@ class Rating(models.Model):
 class Star(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name="star_set")
-

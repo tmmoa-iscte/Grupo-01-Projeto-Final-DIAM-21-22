@@ -1,53 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'iscte_forum/images/favicon.png' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'iscte_forum/style.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{% static 'iscte_forum/scripts.js' %}" type="text/javascript"></script>
     <meta charset="UTF-8">
     <title>{% block page-title %}Espaço Iscte{% endblock %}</title>
 </head>
 <body>
-    <section class="navbar"> <!-- Irá ser aquela barrinha no topo, por enquanto vou meter só um título -->
-        <h1 style="color:blue">Espaço Iscte</h1>
-        <h2 style="color:blue"> Um espaço para postar</h2>
-        {% if request.user.is_authenticated %}
-            <p>Logged in as: {{ request.user.username }}</p>
-            <a href="{% url 'iscte_forum:profile' %}">Profile</a>
-            <a href="{% url 'iscte_forum:logout_page' %}">Logout</a>
-        {% else %}
-            <a href="{% url 'iscte_forum:login_page' %}">Login</a>
-            <a href="{% url 'iscte_forum:register' %}">Register</a>
-        {% endif %}
-    </section>
-    {% block content %}
-    <section class="forum">
-        {% for category in all_categories %}
-            <h3>{{ category.title }}</h3>
-            {% for section in category.section_set.all %}
-                <a href="{% url 'iscte_forum:section' section.simplified_title %}"><strong>{{ section.title }}</strong></a>
-                <p>{{ section.description }}</p>
-                <br/>
-            {% endfor %}
-        {% endfor %}
-        <br/><br/>
-    </section>
-    <section> <!-- Criar novas Categories/Threads -->
-        <form class="new-category" action="{% url 'iscte_forum:index' %}" method="post">
-            {% csrf_token %}
-            <input type="text" name="new-category-title" id="new-category-title" placeholder="New Category Title" />
-            <input type="submit" value="Create New Category" />
-        </form>
-
-        <form class="new-section" action="{% url 'iscte_forum:index' %}" method="post">
-            {% csrf_token %}
-            <input type="text" name="new-sec-title" id="new-sec-title" placeholder="New Section Title" required />
-            <input type="text" name="new-sec-desc" id="new-sec-desc" placeholder="New Section Description" required />
-            <select id="new-sec-category-title" name="new-sec-category-title" required>
+    <section>
+        <section class="navbar">
+            <figure class="top-left">
+                <a href="{% url 'iscte_forum:index' %}"><img class="navbar-image" src="{% static 'iscte_forum/images/logo-iscte.png' %}"></a>
+            </figure>
+            <section class="top-right">
+                {% if request.user.is_authenticated %}
+                    <p><strong>Logged in as:</strong> {{ request.user.username }}</p>
+                    <a class="link-button" href="{% url 'iscte_forum:profile' request.user.username %}">Perfil</a>
+                    <a class="link-button" href="{% url 'iscte_forum:logout_page' %}">Logout</a>
+                {% else %}
+                    <p><strong>Not logged in.</strong></p>
+                    <a class="link-button" href="{% url 'iscte_forum:login_page' %}">Login</a>
+                    <a class="link-button" href="{% url 'iscte_forum:register' %}">Registar</a>
+                {% endif %}
+                <a class="link-button" href="{% url 'iscte_forum:index' %}">Home</a>
+            </section>
+        </section>
+        <br/>
+        {% block content %}
+            <section>
                 {% for category in all_categories %}
-                    <option value="{{ category.title }}">{{ category.title }}</option>
+                    <h3 class="align-left category-title">{{ category.title }}</h3>
+                    <section class="category">
+                        {% for section in category.section_set.all %}
+                            <section class="{% if forloop.counter|divisibleby:2 %} section-blue {% else %} section-white {% endif %}" style="{% if forloop.first %} padding-top: 20px; border-top: 0px solid white; {% endif %}">
+                                <a href="{% url 'iscte_forum:section' section.simplified_title %}"><strong>{{ section.title }}</strong></a>
+                                <p>{{ section.description }}</p>
+                            </section>
+                        {% endfor %}
+                    </section>
+                    <br/><br/>
                 {% endfor %}
-            </select>
-            <input type="submit" value="Create New Section" />
-        </form>
+                <br/>
+                {% if request.user.is_superuser %}
+                    <h3 class="align-left category-title">Funcionalidades de Administrador</h3>
+                    <section class="category"> <!-- Criar novas Categories/Threads -->
+                        <section class="section-grey" style="padding-top: 20px; border-top: 0px solid white;">
+                            <form class="new-category" action="{% url 'iscte_forum:index' %}" method="post">
+                                {% csrf_token %}
+                                <input type="text" name="new-category-title" id="new-category-title" placeholder="Título da Nova Categoria" required />
+                                <input type="submit" value="Criar Nova Categoria" />
+                            </form>
+                        </section>
+
+                        <section class="section-grey">
+                            <form class="edit-category" action="{% url 'iscte_forum:index' %}" method="post">
+                                {% csrf_token %}
+                                <select id="edit-category" name="edit-category" required>
+                                    {% for category in all_categories %}
+                                        <option value="{{ category.title }}">{{ category.title }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="text" name="edit-category-new-title" id="edit-category-new-title" placeholder="Novo Título da Categoria" required />
+                                <input type="submit" value="Atualizar Título da Categoria" />
+                            </form>
+                        </section>
+
+                        <section class="section-grey">
+                            <form class="new-section" action="{% url 'iscte_forum:index' %}" method="post">
+                                {% csrf_token %}
+                                <select id="new-sec-category-title" name="new-sec-category-title" required>
+                                    {% for category in all_categories %}
+                                        <option value="{{ category.title }}">{{ category.title }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="text" name="new-sec-title" id="new-sec-title" placeholder="Título da Nova Secção" required />
+                                <input type="text" name="new-sec-desc" id="new-sec-desc" placeholder="Descrição da Nova Secção" required />
+                                <input type="submit" value="Criar Nova Secção" />
+                            </form>
+                        </section>
+
+                        <section class="section-grey">
+                            <form id="delete-category-form" class="delete-category" action="{% url 'iscte_forum:delete_category' %}" method="post">
+                                {% csrf_token %}
+                                <select id="delete-category-title" name="delete-category-title" required>
+                                    {% for category in all_categories %}
+                                        <option value="{{ category.title }}">{{ category.title }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="submit" value="Apagar Categoria" />
+                            </form>
+                        </section>
+                    </section>
+                    <br/><br/>
+                {% endif %}
+            </section>
+            <section class="footbar">
+                <br/>
+                <p>Este trabalho é da autoria de Afonso Manuel Barral Caniço e Tiago Moreira Muchagato.</p>
+                <p>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.</p>
+            </section>
+        {% endblock %}
+        <br/>
     </section>
-    {% endblock %}
 </body>
 </html>

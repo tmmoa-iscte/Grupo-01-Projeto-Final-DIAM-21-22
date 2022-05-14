@@ -1,10 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "iscte_forum/index.html" %}
 
-</body>
-</html>
+{% block page-title %}Registar{% endblock %}
+
+{% block content %}
+    <section class="outline">
+        <br/>
+        <form action="{% url 'iscte_forum:profile_edit' request.user.username %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p><strong>Foto de Perfil:</strong></p>
+            <input type="file" id="user-profile-pic" name="user-profile-pic" accept="image/*">
+            <br/>
+            <p><strong>Informação Adicional:</strong></p>
+            <p>Curso:</p>
+            <select id="user-course" name="user-course">
+                {% for c in all_courses %}
+                    <option value="{{ c.name }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            <p>Cadeiras Favoritas:</p>
+            <input type="text" name="user-favourite-classes" id="user-favourite-classes" placeholder="Indique as suas cadeiras favoritas!" value="{% if request.user.student %} {{ request.user.student.favourite_classes }} {% else %}{% endif %}"/>
+            <p>Escreve um pouco sobre ti:</p>
+            <textarea class="fancy-input text-area" name="user-about-me" id="user-about-me" rows="5" cols="100" placeholder="Fala-me sobre ti!">{% if request.user.student %}{{ request.user.student.about_me }}{% endif %}</textarea>
+            <br/><br/>
+            <input type="submit" value="Submeter Nova Informação" />
+        </form>
+        <br/>
+    </section>
+{% endblock %}
