@@ -8,7 +8,7 @@
         <h1 class="align-left" style="margin: 0;">{{ sec.title }}</h1>
         <section class="align-right section--header--inner">
             <p>  </p>
-            <form action="{% url 'iscte_forum:section' sec.simplified_title %}" method="post">
+            <form action="{% url 'iscte_forum:section' sec.simplified_title 1 %}" method="post">
                 {% csrf_token %}
                 <select id="sort-thread-mode" name="sort-thread-mode" required>
                     <option value="none" selected disabled hidden>Selecione o modo de organização de threads</option>
@@ -26,7 +26,7 @@
     <section class="align-left section--tools">
         {% if request.user.is_superuser %}
             <section class="section--tools">
-                <form action="{% url 'iscte_forum:section' sec.simplified_title %}" method="post">
+                <form action="{% url 'iscte_forum:section' sec.simplified_title 1 %}" method="post">
                 {% csrf_token %}
                 <input type="text" id="section-edit-title" name="section-edit-title" value="{{ sec.title }}"/>
                 <input type="submit" value="Atualizar Título da Secção" />
@@ -38,7 +38,7 @@
             <p></p>
         {% endif %}
         <section class="section--tools" style="padding-right: 30px;">
-            <form action="{% url 'iscte_forum:section' sec.simplified_title %}" method="post">
+            <form action="{% url 'iscte_forum:section' sec.simplified_title 1 %}" method="post">
                 {% csrf_token %}
                 <input type="text" id="section-thread-filter" name="section-thread-filter" placeholder="Palavras-chave..."/>
                 <input type="submit" value="Filtrar lista de Threads" />
@@ -50,8 +50,8 @@
             <section class="thread-container">
                 <section class="{% if forloop.counter|divisibleby:2 %} section-blue {% else %} section-white {% endif %}" style="{% if forloop.first %} padding-top: 20px; border-top: 0px solid white; {% endif %}">
                     <section style="display: flex;">
-                        <a class="bigger-text" href="{% url 'iscte_forum:thread' sec.simplified_title thread.simplified_title %}"><strong>{{ thread.title }}</strong></a>
-                        <a class="thread--title--star" href="{% url 'iscte_forum:star_thread' sec.simplified_title thread.simplified_title  %}">
+                        <a class="bigger-text" href="{% url 'iscte_forum:thread' sec.simplified_title thread.simplified_title 1 %}"><strong>{{ thread.title }}</strong></a>
+                        <a class="thread--title--star" href="{% url 'iscte_forum:star_thread' sec.simplified_title thread.simplified_title current_page  %}">
                             {% if thread.id in user_stars %}⭐{% else %}☆{% endif %}
                         </a>
                     </section>
@@ -65,5 +65,29 @@
         {% endfor %}
     </section>
     <br/><br/>
+    <section class="page-selector">
+        {% if current_page > 1 %}
+            <a class="page-selector--arrows" href="{% url 'iscte_forum:section' sec.simplified_title previous_page %}">⬅️</a>
+        {% else %}
+            <a class="page-selector--arrows hidden" href="{% url 'iscte_forum:section' sec.simplified_title previous_page %}">⬅️</a>
+        {% endif %}
+        <section>
+            <form class="thread-container" action="{% url 'iscte_forum:section' sec.simplified_title 1 %}" method="post">
+                {% csrf_token %}
+                <select id="section-go-to-page" name="section-go-to-page">
+                    {% for i in page_range %}
+                        <option value="{{i}}" {% if i == current_page %}selected{%endif%}>Página {{ i }}</option>
+                    {% endfor %}
+                </select>
+                <p>  </p>
+                <input class="page-selector--button" type="submit" value="Ir" />
+            </form>
+        </section>
+        {% if current_page < sec.get_number_of_pages %}
+            <a class="page-selector--arrows" href="{% url 'iscte_forum:section' sec.simplified_title next_page %}">➡️</a>
+        {% else %}
+            <a class="page-selector--arrows hidden" href="{% url 'iscte_forum:section' sec.simplified_title next_page %}">➡️</a>
+        {% endif %}
+    </section>
 </section>
 {% endblock %}

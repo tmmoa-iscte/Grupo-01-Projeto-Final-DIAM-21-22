@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-# Create your models here.
+MAXIMUM_THREADS_PER_PAGE = 10
+MAXIMUM_COMMENTS_PER_PAGE = 10
 
 
 # ex: Licenciaturas, Mestrados, etc.
@@ -17,6 +18,12 @@ class Section(models.Model):
     description = models.CharField(max_length=200)
     category = models.ForeignKey(Category, on_delete=models.RESTRICT)
 
+    def get_number_of_pages(self):
+        pages = self.thread_set.count() / MAXIMUM_THREADS_PER_PAGE
+        if pages <= 1:
+            return 1
+        return int(pages)
+
 
 # ex: Preciso de ajuda no exercício!
 class Thread(models.Model):
@@ -26,6 +33,12 @@ class Thread(models.Model):
     star_count = models.IntegerField(default=0)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     time = models.DateTimeField(null=True)
+
+    def get_number_of_pages(self):
+        pages = self.comment_set.count() / MAXIMUM_COMMENTS_PER_PAGE
+        if pages <= 1:
+            return 1
+        return int(pages)
 
 
 class Course(models.Model):

@@ -97,7 +97,7 @@ input[type=text], input[type=email], input[type=password], input[type=file], sel
     background-color: #94a6f8;
 }
 
-a {
+a, label {
     text-decoration: none;
     font-family: sans-serif;
 }
@@ -328,4 +328,26 @@ input[type=submit]:hover {
 
 .error-message {
     color: #d0362a;
+}
+
+.page-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    align-content: center;
+    margin-left: 30px;
+    margin-right: 30px;
+    margin-bottom: 20px;
+}
+
+.page-selector--arrows {
+    font-size: 24px;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.page-selector--button {
+    width: 45px;
 }

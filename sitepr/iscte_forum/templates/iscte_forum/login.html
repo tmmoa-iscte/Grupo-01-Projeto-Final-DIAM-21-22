@@ -10,6 +10,7 @@
         {% else %}
             <br/>
         {% endif %}
+        <p><strong>Iniciar Sessão</strong></p>
         <form action="{% url 'iscte_forum:login_page' %}" method="post">
             {% csrf_token %}
             <input type="text" name="username" id="username" placeholder="Username" />
@@ -19,7 +20,7 @@
             <input type="submit" value="Login" />
         </form>
         <br/>
-        <a href="{% url 'iscte_forum:register' %}">Ainda não tem conta? Clique aqui para se registar!</a>
-        <br/><br/>
+        <p>Ainda não tem conta? <a href="{% url 'iscte_forum:register' %}">Clique aqui para se registar!</a></p>
+        <br/>
     </section>
 {% endblock %}

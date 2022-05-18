@@ -1,16 +1,15 @@
 import datetime
-import os
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.shortcuts import redirect
 
-from .models import Student, Section, Thread, Comment, Category, Rating, Star, Course
+from .models import Student, Section, Thread, Comment, Category, Rating, Star, Course, MAXIMUM_THREADS_PER_PAGE, \
+    MAXIMUM_COMMENTS_PER_PAGE
 
 
 def index(request):
@@ -146,7 +145,7 @@ def profile_edit(request, username):
         })
 
 
-def section(request, section_simplified_title):
+def section(request, section_simplified_title, page_number):
     if 'sort-thread-mode' in request.POST:  # Se o utilizador tiver selecionado um modo, guarda-o na session.
         request.session['sort-thread-mode'] = request.POST['sort-thread-mode']
     elif request.method == 'POST':  # Se for POST e ele não tiver selecionado, by default organiza por timestamps.
@@ -170,33 +169,74 @@ def section(request, section_simplified_title):
         sec.simplified_title = request.POST['section-edit-title'].lower().replace(" ", "-")
         sec.save()
 
+    if 'section-go-to-page' in request.POST:
+        return redirect_to_section(section_simplified_title, request.POST['section-go-to-page'])
+
+    if page_number > sec.get_number_of_pages():
+        return redirect_to_section(section_simplified_title, sec.get_number_of_pages())
+    elif page_number < 1:
+        return redirect_to_section(section_simplified_title, 1)
+
+    # 1 -> [0, MAX - 1]
+    # 2 -> [MAX, 2 * MAX - 1]
+    # 3 -> [2 * MAX, 3 * MAX - 1]
+    start = (page_number - 1) * MAXIMUM_THREADS_PER_PAGE
+    end = page_number * MAXIMUM_THREADS_PER_PAGE
+    threads_by_section = threads_by_section[start:end]
+
     if request.user.is_authenticated:
         return render(request, 'iscte_forum/section.html', {
             'sec': sec,
             'threads_by_section': threads_by_section,  # Passa a lista das threads no dicionário de contexto.
             'user_stars': Star.objects.filter(user=request.user).values_list('thread', flat=True),
+            'current_page': page_number,
+            'next_page': page_number + 1,
+            'previous_page': page_number - 1,
+            'page_range': range(1, sec.get_number_of_pages() + 1),
         })
     else:
         return render(request, 'iscte_forum/section.html', {
             'sec': sec,
             'threads_by_section': threads_by_section,  # Passa a lista das threads no dicionário de contexto.
+            'current_page': page_number,
+            'next_page': page_number + 1,
+            'previous_page': page_number - 1,
+            'page_range': range(1, sec.get_number_of_pages() + 1),
         })
 
 
-def thread(request, section_simplified_title, thread_simplified_title):
+def thread(request, section_simplified_title, thread_simplified_title, page_number):
     section_by_title = get_object_or_404(Section, simplified_title=section_simplified_title)
     t = get_object_or_404(Thread, section=section_by_title, simplified_title=thread_simplified_title,)
+
+    if t.comment_set.count() == 0:
+        t.delete()
+        return redirect_to_section(section_simplified_title, 1)
+
+    if 'thread-go-to-page' in request.POST:
+        return redirect_to_thread(section_simplified_title, thread_simplified_title, request.POST['thread-go-to-page'])
+
+    if page_number > t.get_number_of_pages():
+        return redirect_to_thread(section_simplified_title, thread_simplified_title, t.get_number_of_pages())
+    elif page_number < 1:
+        return redirect_to_thread(section_simplified_title, thread_simplified_title, 1)
 
     if request.user.is_authenticated and request.method == 'POST' and 'new-comment-text' in request.POST:
         text = request.POST['new-comment-text']
         comment = Comment(text=text, author=request.user, thread=t, time=datetime.datetime.now())
         comment.save()
-        return redirect_to_thread(section_simplified_title, thread_simplified_title)
+        return redirect_to_thread(section_simplified_title, thread_simplified_title, t.get_number_of_pages())
     else:
+        start = (page_number - 1) * MAXIMUM_COMMENTS_PER_PAGE
+        end = page_number * MAXIMUM_COMMENTS_PER_PAGE
         return render(request, 'iscte_forum/thread.html', {
             'section': section_by_title,
             'thread': t,
-            'comments_by_thread': t.comment_set.all  # Passa a lista das threads no dicionário de contexto.
+            'comments_by_thread': t.comment_set.all()[start:end],  # Passa a lista das threads no contexto.
+            'current_page': page_number,
+            'next_page': page_number + 1,
+            'previous_page': page_number - 1,
+            'page_range': range(1, t.get_number_of_pages() + 1),
         })
 
 
@@ -218,7 +258,7 @@ def new_thread(request, section_simplified_title):
 
         # Estamos em, por exemplo: http://iscte-forum.pt/engenharia-informatica/action/post
         # Redireciona para, por exemplo: http://iscte-forum.pt/engenharia-informatica
-        return redirect_to_thread(section_simplified_title, simplified_title)
+        return redirect_to_thread(section_simplified_title, simplified_title, 1)
     else:  # 1.ª invocação. Mostra a página de criar uma Thread.
         return render(request, 'iscte_forum/new_thread.html', {
             "sec": get_object_or_404(Section, simplified_title=section_simplified_title)
@@ -226,7 +266,7 @@ def new_thread(request, section_simplified_title):
 
 
 @login_required(login_url="iscte_forum:login_page")
-def rate_comment(request, section_simplified_title, thread_simplified_title, comment_id, positive_num):
+def rate_comment(request, section_simplified_title, thread_simplified_title, page_number, comment_id, positive_num):
     c = get_object_or_404(Comment, pk=comment_id)
     positive = True if positive_num == 1 else False  # 1 = positivo; anything else = negativo.
     try:  # Se o rating já existir, é eliminado.
@@ -245,18 +285,18 @@ def rate_comment(request, section_simplified_title, thread_simplified_title, com
         r.save()  # Grava o Rating na base de dados.
     c.save()
 
-    return redirect_to_thread(section_simplified_title, thread_simplified_title)
+    return redirect_to_thread(section_simplified_title, thread_simplified_title, page_number)
 
 
 @login_required(login_url="iscte_forum:login_page")
-def edit_comment(request, section_simplified_title, thread_simplified_title, comment_id):
+def edit_comment(request, section_simplified_title, thread_simplified_title, page_number, comment_id):
     c = get_object_or_404(Comment, pk=comment_id)
     if request.method == 'POST':  # 2.ª invocação. Edita o comentário e volta para a Thread.
         if 'edit-comment-text' in request.POST and request.POST['edit-comment-text']:
             c.text = request.POST['edit-comment-text']
             c.edited = True
         c.save()
-        return redirect_to_thread(section_simplified_title, thread_simplified_title)
+        return redirect_to_thread(section_simplified_title, thread_simplified_title, page_number)
     else:
         return render(request, 'iscte_forum/edit_comment.html', {
             'comment': c,
@@ -266,7 +306,7 @@ def edit_comment(request, section_simplified_title, thread_simplified_title, com
 
 
 @login_required(login_url="iscte_forum:login_page")
-def star_thread(request, section_simplified_title, thread_simplified_title):
+def star_thread(request, section_simplified_title, page_number, thread_simplified_title):
     t = get_thread(section_simplified_title, thread_simplified_title)
     try:  # Se a estrela já existir, apaga-a.
         s = Star.objects.get(user=request.user, thread=t)
@@ -277,7 +317,7 @@ def star_thread(request, section_simplified_title, thread_simplified_title):
         t.star_count += 1
         s.save()
     t.save()
-    return redirect_to_section(section_simplified_title)
+    return redirect_to_section(section_simplified_title, page_number)
 
 
 @login_required(login_url="iscte_forum:login_page")
@@ -285,15 +325,21 @@ def delete_comment(request, section_simplified_title, thread_simplified_title, c
     c = get_object_or_404(Comment, pk=comment_id)
     if request.user.is_superuser or request.user.id == c.author.id:  # Admins apagam tudo. Membros apagam só os seus.
         c.delete()
-    return redirect_to_thread(section_simplified_title, thread_simplified_title)
+    return redirect_to_thread(section_simplified_title, thread_simplified_title, 1)
 
 
 @permission_required('iscte_forum.delete_category')
 def delete_category(request):
     if request.user.is_superuser:  # Apenas superusers podem apagar categorias.
         cat = get_object_or_404(Category, title=request.POST['delete-category-title'])
-        cat.delete()
-        return HttpResponseRedirect(reverse('iscte_forum:index'))
+        if cat.section_set.count() == 0:
+            cat.delete()
+            return HttpResponseRedirect(reverse('iscte_forum:index'))
+        else:
+            return render(request, 'iscte_forum/index.html', {
+                'all_categories': Category.objects.all(),
+                'error_message': 'Não pode apagar uma Categoria que contenha Secções!',
+            })
 
 
 @permission_required('iscte_forum.delete_category')
@@ -309,17 +355,17 @@ def delete_thread(request, section_simplified_title, thread_simplified_title):
     t = get_thread(section_simplified_title, thread_simplified_title)
     if request.user.is_superuser or request.user.id == t.author.id:  # Admins apagam tudo. Membros apagam só os seus.
         t.delete()
-    return redirect_to_section(section_simplified_title)
+    return redirect_to_section(section_simplified_title, 1)
 
 
 # Função auxiliar — redireciona para a Thread especificada.
-def redirect_to_thread(sec_simple_title, thread_simple_title):
-    return HttpResponseRedirect(reverse('iscte_forum:thread', args=(sec_simple_title, thread_simple_title,)))
+def redirect_to_thread(sec_simple_title, thread_simple_title, page):
+    return HttpResponseRedirect(reverse('iscte_forum:thread', args=(sec_simple_title, thread_simple_title, page,)))
 
 
 # Função auxiliar — redireciona para a Section especificada.
-def redirect_to_section(sec_simple_title):
-    return HttpResponseRedirect(reverse('iscte_forum:section', args=(sec_simple_title,)))
+def redirect_to_section(sec_simple_title, page):
+    return HttpResponseRedirect(reverse('iscte_forum:section', args=(sec_simple_title, page,)))
 
 
 # Função auxiliar — devolve a thread pertencente a uma dada section.

@@ -18,9 +18,10 @@ urlpatterns = [
     # ex: /profile/edit
     path('profile/<str:username>/edit', views.profile_edit, name='profile_edit'),
     # ex: /engenharia-informatica
-    path('<str:section_simplified_title>', views.section, name='section'),
+    path('<str:section_simplified_title>/page/<int:page_number>', views.section, name='section'),
     # ex: /engenharia-informatica/duvida-no-exercicio
-    path('<str:section_simplified_title>/<str:thread_simplified_title>', views.thread, name='thread'),
+    path('<str:section_simplified_title>/<str:thread_simplified_title>/page/<int:page_number>', views.thread,
+         name='thread'),
     # ex: /engenharia-informatica/action/post
     path('<str:section_simplified_title>/action/post', views.new_thread, name='new_thread'),
     # ex: /engenharia-informatica/duvida-no-exercicio/action/delete
@@ -32,14 +33,15 @@ urlpatterns = [
     path('<str:section_simplified_title>/action/delete', views.delete_section, name='delete_section'),
 
     # ex: /engenharia-informatica/duvida-no-exercicio/7/1 (1 = positivo; anything else = negativo.)
-    path('<str:section_simplified_title>/<str:thread_simplified_title>/<int:comment_id>/<int:positive_num>',
-         views.rate_comment, name='rate_comment'),
+    path('<str:section_simplified_title>/<str:thread_simplified_title>/page/<int:page_number>/<int:comment_id>/<int'
+         ':positive_num>', views.rate_comment, name='rate_comment'),
     # ex: /engenharia-informatica/duvida-no-exercicio/7/edit
-    path('<str:section_simplified_title>/<str:thread_simplified_title>/<int:comment_id>/edit',
+    path('<str:section_simplified_title>/<str:thread_simplified_title>/page/<int:page_number>/<int:comment_id>/edit',
          views.edit_comment, name='edit_comment'),
     # ex:
     path('<str:section_simplified_title>/<str:thread_simplified_title>/<int:comment_id>/delete', views.delete_comment,
          name='delete_comment'),
     # ex: /engenharia-informatica/duvida-no-exercicio/star
-    path('<str:section_simplified_title>/<str:thread_simplified_title>/star', views.star_thread, name='star_thread'),
+    path('<str:section_simplified_title>/<str:thread_simplified_title>/page/<int:page_number>/star', views.star_thread,
+         name='star_thread'),
 ]

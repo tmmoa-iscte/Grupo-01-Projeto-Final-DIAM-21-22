@@ -36,7 +36,7 @@
                     <section class="category">
                         {% for section in category.section_set.all %}
                             <section class="{% if forloop.counter|divisibleby:2 %} section-blue {% else %} section-white {% endif %}" style="{% if forloop.first %} padding-top: 20px; border-top: 0px solid white; {% endif %}">
-                                <a href="{% url 'iscte_forum:section' section.simplified_title %}"><strong>{{ section.title }}</strong></a>
+                                <a href="{% url 'iscte_forum:section' section.simplified_title 1 %}"><strong>{{ section.title }}</strong></a>
                                 <p>{{ section.description }}</p>
                             </section>
                         {% endfor %}
@@ -83,6 +83,9 @@
                         </section>
 
                         <section class="section-grey">
+                            {% if error_message %}
+                                <p><strong>{{ error_message }}</strong></p>
+                            {% endif %}
                             <form id="delete-category-form" class="delete-category" action="{% url 'iscte_forum:delete_category' %}" method="post">
                                 {% csrf_token %}
                                 <select id="delete-category-title" name="delete-category-title" required>
@@ -100,7 +103,7 @@
             <section class="footbar">
                 <br/>
                 <p>Este trabalho é da autoria de Afonso Manuel Barral Caniço e Tiago Moreira Muchagato.</p>
-                <p>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.</p>
+                <p>This work, excluding any and all images present, is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.</p>
             </section>
         {% endblock %}
         <br/>

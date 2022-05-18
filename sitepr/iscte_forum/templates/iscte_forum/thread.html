@@ -39,19 +39,19 @@
                             <section>
                                 {% if request.user.is_superuser or request.user.id == comment.author.id %}
                                     <a class="delete-comment-button" href="{% url 'iscte_forum:delete_comment' section.simplified_title thread.simplified_title comment.id %}">🗑️</a>
-                                    <a href="{% url 'iscte_forum:edit_comment' section.simplified_title thread.simplified_title comment.id %}">📝️</a>
+                                    <a href="{% url 'iscte_forum:edit_comment' section.simplified_title thread.simplified_title current_page comment.id %}">📝️</a>
                                 {% else %}
                                     <p></p>
                                 {% endif %}
                             </section>
                             <section class="comment--inner--footer--right">
                                 <section class="comment--inner--footer--right">
-                                    <a href="{% url 'iscte_forum:rate_comment' section.simplified_title thread.simplified_title comment.id 1 %}">👍</a>
+                                    <a href="{% url 'iscte_forum:rate_comment' section.simplified_title thread.simplified_title current_page comment.id 1 %}">👍</a>
                                     <p>{{ comment.like_count }}</p>
                                     <p>  </p>
                                 </section>
                                 <section class="comment--inner--footer--right">
-                                    <a href="{% url 'iscte_forum:rate_comment' section.simplified_title thread.simplified_title comment.id 0 %}">👎</a>
+                                    <a href="{% url 'iscte_forum:rate_comment' section.simplified_title thread.simplified_title current_page comment.id 0 %}">👎</a>
                                     <p>{{ comment.dislike_count }}</p>
                                 </section>
                             </section>
@@ -61,11 +61,34 @@
             </section>
             <br/><br/>
         {% endfor %}
-        <br/>
+    </section>
+    <section class="page-selector">
+        {% if current_page > 1 %}
+            <a class="page-selector--arrows" href="{% url 'iscte_forum:thread' section.simplified_title thread.simplified_title previous_page %}">⬅️</a>
+        {% else %}
+            <a class="page-selector--arrows hidden" href="{% url 'iscte_forum:thread' section.simplified_title thread.simplified_title previous_page %}">⬅️</a>
+        {% endif %}
+        <section>
+            <form class="thread-container" action="{% url 'iscte_forum:thread' section.simplified_title thread.simplified_title 1 %}" method="post">
+                {% csrf_token %}
+                <select id="thread-go-to-page" name="thread-go-to-page">
+                    {% for i in page_range %}
+                        <option value="{{i}}" {% if i == current_page %}selected{%endif%}>Página {{ i }}</option>
+                    {% endfor %}
+                </select>
+                <p>  </p>
+                <input class="page-selector--button" type="submit" value="Ir" />
+            </form>
+        </section>
+        {% if current_page < thread.get_number_of_pages %}
+            <a class="page-selector--arrows" href="{% url 'iscte_forum:thread' section.simplified_title thread.simplified_title next_page %}">➡️</a>
+        {% else %}
+            <a class="page-selector--arrows hidden" href="{% url 'iscte_forum:thread' section.simplified_title thread.simplified_title next_page %}">➡️</a>
+        {% endif %}
     </section>
     <section>
         {% if request.user.is_authenticated %}
-        <form action="{% url 'iscte_forum:thread' section.simplified_title thread.simplified_title %}" method="post">
+        <form action="{% url 'iscte_forum:thread' section.simplified_title thread.simplified_title thread.get_number_of_pages %}" method="post">
             {% csrf_token %}
             <textarea class="fancy-input text-area" name="new-comment-text" id="new-comment-text" placeholder="Texto do novo comentário..."></textarea>
             <br>
